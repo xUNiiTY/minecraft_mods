@@ -38,7 +38,7 @@ $shaders = @(
         Return
     }
     
-    if (-not (Test-Path $minecraftVersion\1.21.10\)) {
+    if (-not (Test-Path $minecraftVersion\1.21.10\1.21.10.jar)) {
         Write-Host "Minecraft Version 1.21.10 muss installiert sein!" -ForegroundColor Red
         return
     }
