@@ -34,12 +34,12 @@ $shaders = @(
     
 
     if ((Get-Process | Select-String "Minecraft")) {
-        Write-Host "Minecraft (Launcher) muss geschlossen sein!" -ForegroundColor Red
+        Write-Host "[ERROR] - Minecraft (Launcher) muss geschlossen sein!" -ForegroundColor Red
         Return
     }
     
     if (-not (Test-Path $minecraftVersion\1.21.10\1.21.10.jar)) {
-        Write-Host "Minecraft Version 1.21.10 muss installiert sein!" -ForegroundColor Red
+        Write-Host "[ERROR] - Minecraft Version 1.21.10 muss installiert sein!" -ForegroundColor Red
         return
     }
     
