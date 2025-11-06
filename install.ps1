@@ -126,24 +126,66 @@ else {
 
 
 if (-not (Test-Path (Join-Path $minecraftVersion "..\HTScript.log"))) {
-    $json = Get-Content $launcherProfilesJson -Raw | ConvertFrom-Json
+    $logFile = Join-Path $minecraftVersion "..\HTScript.log"
+    $changed = $false
 
-    foreach ($profile in $json.profiles.PSObject.Properties) {
-        if ($profile.Value.JavaArgs) {
-            $profile.Value.JavaArgs = $profile.Value.JavaArgs -replace '-Xmx\d+G', '-Xmx8G'
+    try {
+        $json = Get-Content $launcherProfilesJson -Raw | ConvertFrom-Json
+    } catch {
+        Write-Host "[ERROR] launcher_profiles.json konnte nicht gelesen werden: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
+
+    foreach ($McProfile in $json.profiles.PSObject.Properties) {
+        $profileName = $McProfile.Name
+        $profile = $McProfile.Value
+
+        $hasJavaArgsProp = $profile.PSObject.Properties.Match('javaArgs').Count -gt 0
+        $old = $null
+        $new = $null
+
+        if (-not $hasJavaArgsProp -or [string]::IsNullOrWhiteSpace($profile.javaArgs)) {
+            $new = '-Xmx8G -XX:+UnlockExperimentalVMOptions -XX:+UseG1GC -XX:G1NewSizePercent=20 -XX:G1ReservePercent=20 -XX:MaxGCPauseMillis=50 -XX:G1HeapRegionSize=32M'
+            if (-not $hasJavaArgsProp) {
+                $profile | Add-Member -MemberType NoteProperty -Name 'javaArgs' -Value $new
+            } else {
+                $profile.javaArgs = $new
+            }
+            $changed = $true
+            "[$(Get-Date -Format o)] [$profileName] javaArgs hinzugefügt: $new" | Out-File -FilePath $logFile -Append -Encoding utf8
+        } else {
+            $old = $profile.javaArgs
+
+            if ($profile.javaArgs -match '-Xmx\d+G') {
+                $profile.javaArgs = $profile.javaArgs -replace '-Xmx\d+G','-Xmx8G'
+            } elseif ($profile.javaArgs -notmatch '-Xmx\d+G') {
+                # kein -Xmx vorhanden -> anhängen
+                $profile.javaArgs = "$($profile.javaArgs) -Xmx8G"
+            }
+
+            if ($profile.javaArgs -ne $old) {
+                $changed = $true
+                "[$(Get-Date -Format o)] [$profileName] javaArgs geändert: `"$old`" -> `"$($profile.javaArgs)`"" | Out-File -FilePath $logFile -Append -Encoding utf8
+            }
         }
     }
 
-    $json | ConvertTo-Json -Depth 10 | Set-Content $launcherProfilesJson -Encoding utf8
+    try {
+        $json | ConvertTo-Json -Depth 20 | Set-Content $launcherProfilesJson -Encoding UTF8
+    } catch {
+        Write-Host "[ERROR] Änderungen konnten nicht geschrieben werden: $($_.Exception.Message)" -ForegroundColor Red
+        exit 1
+    }
 
     Write-Host ("[INFO] -", "{0,-60}" -f "Java Arguments") -NoNewline -ForegroundColor White
-    Write-Host "SET TO 8G" -ForegroundColor Green
-    "java arguments set" >> (Join-Path $minecraftVersion "..\HTScript.log")
+    if ($changed) {
+        Write-Host "SET/UPDATED TO 8G" -ForegroundColor Green
+    } else {
+        Write-Host "NO CHANGES NEEDED" -ForegroundColor Yellow
+        "[$(Get-Date -Format o)] keine Änderungen erforderlich" | Out-File -FilePath $logFile -Append -Encoding utf8
+    }
 }
-
 else {
     Write-Host ("[INFO] -", "{0,-60}" -f "Java Arguments") -NoNewline -ForegroundColor White
     Write-Host "ALREADY SET" -ForegroundColor Yellow
 }
-
-
