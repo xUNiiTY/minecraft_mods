@@ -20,7 +20,8 @@ $mods = @(
     "https://cdn.modrinth.com/data/EsAfCjCV/versions/8sbiz1lS/appleskin-fabric-mc1.21.9-3.0.7.jar",
     "https://cdn.modrinth.com/data/51shyZVL/versions/nASRyMbu/moreculling-fabric-1.21.9-1.5.0-beta.2.jar",
     "https://cdn.modrinth.com/data/aC3cM3Vq/versions/ULOi34Uh/MouseTweaks-fabric-mc1.21.9-2.29.jar",
-    "https://cdn.modrinth.com/data/9s6osm5g/versions/qMxkrrmq/cloth-config-20.0.149-fabric.jar"
+    "https://cdn.modrinth.com/data/9s6osm5g/versions/qMxkrrmq/cloth-config-20.0.149-fabric.jar",
+    "https://cdn.modrinth.com/data/uCdwusMi/versions/9Y10ZuWP/DistantHorizons-2.3.6-b-1.21.10-fabric-neoforge.jar"
 
 )
 
@@ -31,8 +32,13 @@ $shaders = @(
     "https://cdn.modrinth.com/data/LTvf5Tji/versions/JQWprOx9/%C2%A7lLITE%20shaders%204.6.2.zip"
     )
     
+
+    if ((Get-Process | Select-String "Minecraft")) {
+        Write-Host "Minecraft (Launcher) muss geschlossen sein!" -ForegroundColor Red
+        Return
+    }
     
-    if (-not (Test-Path $minecraftVersion\1.21.10)) {
+    if (-not (Test-Path $minecraftVersion\1.21.10\)) {
         Write-Host "Minecraft Version 1.21.10 muss installiert sein!" -ForegroundColor Red
         return
     }
@@ -107,6 +113,7 @@ else {
 
 if (-not (Test-Path "$minecraftVersion\fabric-loader-0.17.3-1.21.10")) {
     Start-Process $downloadFolder\fabric_installer.exe -Wait
+    Start-Sleep 2
     
     Write-Host ("[INFO] -", "{0,-60}" -f "Fabric Loader") -NoNewline -ForegroundColor White
     Write-Host "INSTALLED" -ForegroundColor Green
