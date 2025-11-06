@@ -63,11 +63,11 @@ foreach ($mod in $mods) {
     
     if (-not (Test-Path $literalPath)) {
         Invoke-WebRequest -Uri $mod -OutFile $literalPath
-        Write-Host ("[INFO -]", "{0,-60}" -f $fileName) -NoNewline -ForegroundColor White
+        Write-Host ("[INFO] -", "{0,-60}" -f $fileName) -NoNewline -ForegroundColor White
         Write-Host "INSTALLED" -ForegroundColor Green
     }
     else {
-        Write-Host ("[INFO -]", "{0,-60}" -f $fileName) -NoNewline -ForegroundColor White
+        Write-Host ("[INFO] -", "{0,-60}" -f $fileName) -NoNewline -ForegroundColor White
         Write-Host "already INSTALLED" -ForegroundColor Yellow
     }
 }
